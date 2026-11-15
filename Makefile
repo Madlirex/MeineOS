@@ -16,11 +16,14 @@ stage1.bin: boot/stage1.asm
 stage2.bin: boot/stage2.asm
 	$(ASM) -f bin $< -o $@
 
-kernel.o: kernel/kernel.cpp
+CPP_SOURCES = $(wildcard kernel/*.cpp)
+CPP_OBJECTS = $(CPP_SOURCES:.cpp=.o)
+
+kernel/%.o: kernel/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-kernel.elf: kernel.o linker.ld
-	$(LD) -T linker.ld -o $@ kernel.o
+kernel.elf: $(CPP_OBJECTS) linker.ld
+	$(LD) -T linker.ld -o $@ $(CPP_OBJECTS)
 
 kernel.bin: kernel.elf
 	$(OBJCOPY) -O binary $< $@
