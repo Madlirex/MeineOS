@@ -156,7 +156,18 @@ init_lm:
     mov es, ax
     mov ss, ax
     mov rsp, 0x90000
-    jmp 0x8800                      ; Jump to kernel_main at 0x8800!
+
+    ; Enable SSE so 64-bit C++ vector/float instructions never #UD
+    mov rax, cr0
+    and ax, 0xFFFB          ; Clear CR0.EM (bit 2)
+    or ax, 0x2              ; Set CR0.MP (bit 1)
+    mov cr0, rax
+    mov rax, cr4
+    or ax, 3 << 9           ; Set CR4.OSFXSR (bit 9) and CR4.OSXMMEXCPT (bit 10)
+    mov cr4, rax
+
+    mov rax, 0x10000
+    jmp rax                 ; Jump to kernel_main at 0x10000
 
 ; Pad Stage 2 to exactly 2048 bytes (4 sectors)
 times 2048 - ($ - $$) db 0

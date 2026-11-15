@@ -1,12 +1,12 @@
 .PHONY: all run debug clean
 
-ASM     = nasm
-CXX     = x86_64-elf-g++
-LD      = x86_64-elf-ld
+ASM = nasm
+CXX = x86_64-elf-g++
+LD = x86_64-elf-ld
 OBJCOPY = x86_64-elf-objcopy
-QEMU    = qemu-system-x86_64
+QEMU = qemu-system-x86_64
 
-CXXFLAGS = -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -mno-red-zone -mcmodel=kernel
+CXXFLAGS = -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mcmodel=kernel
 
 all: os.img
 
@@ -19,11 +19,14 @@ stage2.bin: boot/stage2.asm
 CPP_SOURCES = $(wildcard kernel/*.cpp)
 CPP_OBJECTS = $(CPP_SOURCES:.cpp=.o)
 
+kernel/interrupts.o: kernel/interrupts.asm
+	$(ASM) -f elf64 $< -o $@
+
 kernel/%.o: kernel/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-kernel.elf: $(CPP_OBJECTS) linker.ld
-	$(LD) -T linker.ld -o $@ $(CPP_OBJECTS)
+kernel.elf: $(CPP_OBJECTS) kernel/interrupts.o linker.ld
+	$(LD) -n -z noexecstack -T linker.ld -o $@ $(CPP_OBJECTS) kernel/interrupts.o
 
 kernel.bin: kernel.elf
 	$(OBJCOPY) -O binary $< $@
@@ -36,7 +39,7 @@ run: os.img
 	$(QEMU) -drive format=raw,file=os.img -serial stdio
 
 debug: os.img
-	$(QEMU) -drive format=raw,file=os.img -s -S -no-reboot -d int
+	$(QEMU) -drive format=raw,file=os.img -s -S -no-reboot -d int -serial stdio
 
 clean:
-	rm -f *.bin *.o *.elf *.img
+	rm -f *.bin kernel/*.o *.o *.elf *.img

@@ -1,12 +1,15 @@
 #include "boot_info.hpp"
 #include "graphics.hpp"
 #include "serial.hpp"
+#include "idt.hpp"
 #include <stdint.h>
 
 using Color = Graphics::Color;
 
 extern "C" __attribute__((section(".text.boot"))) void kernel_main() {
     Serial::init();
+    IDT::init();
+
     Serial::print("[KERNEL] Booted into 64-bit Long Mode!\n");
     Serial::print("[KERNEL] Framebuffer address: ");
     Serial::print_hex(BOOT_INFO->framebuffer);
@@ -30,7 +33,7 @@ extern "C" __attribute__((section(".text.boot"))) void kernel_main() {
 
     Graphics::fill_rect(0, static_cast<int>(BOOT_INFO->height - 40), static_cast<int>(BOOT_INFO->width), 40, static_cast<Color>(0x242933));
     Graphics::fill_rect(8, static_cast<int>(BOOT_INFO->height - 34), 80, 28, static_cast<Color>(0x5E81AC));
-
+    asm volatile("int $3");
     while (true) {
         asm volatile("hlt");
     }
