@@ -10,7 +10,10 @@ CXXFLAGS = -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -mno-red-z
 
 all: os.img
 
-boot.bin: boot/boot.asm
+stage1.bin: boot/stage1.asm
+	$(ASM) -f bin $< -o $@
+
+stage2.bin: boot/stage2.asm
 	$(ASM) -f bin $< -o $@
 
 kernel.o: kernel/kernel.cpp
@@ -22,8 +25,8 @@ kernel.elf: kernel.o linker.ld
 kernel.bin: kernel.elf
 	$(OBJCOPY) -O binary $< $@
 
-os.img: boot.bin kernel.bin
-	cat boot.bin kernel.bin > os.img
+os.img: stage1.bin stage2.bin kernel.bin
+	cat stage1.bin stage2.bin kernel.bin > os.img
 	fsutil file seteof os.img 1474560
 
 run: os.img
@@ -33,4 +36,4 @@ debug: os.img
 	$(QEMU) -drive format=raw,file=os.img -s -S -no-reboot -d int
 
 clean:
-	del /Q *.bin *.o *.elf *.img 2>nul || exit /b 0
+	rm -f *.bin *.o *.elf *.img

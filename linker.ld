@@ -1,7 +1,7 @@
 ENTRY(kernel_main)
 
 SECTIONS {
-    . = 0x10000;
+    . = 0x8800;
 
     .text : {
         *(.text.boot)
