@@ -61,10 +61,7 @@ extern "C" void isr_exception_handler(IDT::InterruptFrame* frame)
 {
     Serial::print("\n================ KERNEL PANIC ================\n");
     Serial::print("Exception: ");
-    if (frame->vector < 32)
-    {
-        Serial::print(EXCEPTION_NAMES[frame->vector]);
-    }
+    Serial::print(frame->vector < 32 ? EXCEPTION_NAMES[frame->vector] : "Unknown");
     Serial::print("\nVector: ");
     Serial::print_hex(frame->vector);
     Serial::print(" | Error Code: ");
@@ -75,10 +72,28 @@ extern "C" void isr_exception_handler(IDT::InterruptFrame* frame)
     Serial::print_hex(frame->rsp);
     Serial::print("\n==============================================\n");
 
+    auto white = Graphics::Color(0xFFFFFFFF);
+
     Graphics::fill_rect(0, 0, static_cast<int>(BOOT_INFO->width), static_cast<int>(BOOT_INFO->height),
                         Graphics::Color(0x0050CC));
-    Graphics::fill_rect(100, 100, 120, 120, Graphics::Color(0xFFFFFF)); // Classic white square/sad face badge
-    Graphics::draw_text(250, 100, "Oops!", Graphics::Color(0xFFFFFFFF), 10);
+    Graphics::draw_char(100, 100, ':', white, 40);
+    Graphics::draw_char(260, 100, '(', white, 40);
+    Graphics::draw_text(620, 100, "Oops!", white, 10);
+    Graphics::draw_text(620, 196, "It seems like the system ran into a problem", white, 3);
+    Graphics::draw_text(620, 356, "Exception:", white, 3);
+    Graphics::draw_text(916, 356, frame->vector < 32 ? EXCEPTION_NAMES[frame->vector] : "Unknown", white, 3);
+
+    Graphics::draw_text(620, 396, "Vector:", white, 3);
+    Graphics::draw_hex(916, 396, frame->vector, white, 3);
+
+    Graphics::draw_text(620, 436, "Error Code:", white, 3);
+    Graphics::draw_hex(916, 436, frame->error_code, white, 3);
+
+    Graphics::draw_text(620, 476, "RIP:", white, 3);
+    Graphics::draw_hex(916, 476, frame->rip, white, 3);
+
+    Graphics::draw_text(620, 516, "RSP:", white, 3);
+    Graphics::draw_hex(916, 516, frame->rsp, white, 3);
 
     while (true)
     {

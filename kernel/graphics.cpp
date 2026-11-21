@@ -113,7 +113,7 @@ void draw_hex(const int x, const int y, const uint64_t value, const Color color,
     const char hex_digits[] = "0123456789ABCDEF";
     char buffer[19];
     buffer[0] = '0';
-    buffer[1] = '1';
+    buffer[1] = 'x';
     buffer[18] = '\0';
 
     for (int i = 0; i < 16; i++)
