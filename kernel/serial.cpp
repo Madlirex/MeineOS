@@ -6,7 +6,7 @@ namespace Serial
 {
 constexpr uint16_t COM1 = 0x3F8;
 
-void init()
+void init() noexcept
 {
     outb(COM1 + 1, 0x00); // Disable all interrupts
     outb(COM1 + 3, 0x80); // Enable DLAB (set baud rate divisor)
@@ -17,12 +17,12 @@ void init()
     outb(COM1 + 4, 0x0B); // IRQs enabled, RTS/DSR set
 }
 
-bool is_transmit_empty()
+bool is_transmit_empty() noexcept
 {
     return (inb(COM1 + 5) & 0x20) != 0;
 }
 
-void write_char(char c)
+void write_char(char c) noexcept
 {
     while (!is_transmit_empty())
     {
@@ -31,7 +31,7 @@ void write_char(char c)
     outb(COM1, static_cast<uint8_t>(c));
 }
 
-void print(const char* str)
+void print(const char* str) noexcept
 {
     for (int i = 0; str[i] != '\0'; i++)
     {
@@ -39,7 +39,7 @@ void print(const char* str)
     }
 }
 
-void print_hex(const uint64_t value)
+void print_hex(const uint64_t value) noexcept
 {
     auto hex_chars = "0123456789ABCDEF";
     print("0x");
