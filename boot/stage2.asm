@@ -9,37 +9,116 @@
 ; [0x7014] uint32_t bpp
 
 BOOT_INFO equ 0x7000
-VBE_MODE_INFO equ 0x7200      ; Temporary 256-byte buffer for BIOS VBE query
+VBE_MODE_INFO equ 0x7200      ; Temporary 256-byte buffer for VBE ModeInfoBlock
+VBE_INFO equ 0x7400      ; 512-byte buffer for VBE Controller Info
+
+; Cap the maximum resolution
+MAX_WIDTH equ 1920
+MAX_HEIGHT equ 1080
 
 stage2_start:
-    ; Query VBE Mode 0x118 (1024x768, 24/32-bit RGB)
+    xor ax, ax
+    mov es, ax
+
+    ; Query VBE Controller Info (AX = 0x4F00)
+    mov dword [VBE_INFO], 'VBE2'    ; Request VBE 2.0+ info
+    mov ax, 0x4F00
+    mov di, VBE_INFO
+    int 0x10
+    cmp ax, 0x004F
+    jne vbe_error
+
+    ; Read far pointer (offset, segment) to the supported mode list at [VBE_INFO + 14]
+    mov si, [VBE_INFO + 14]         ; Mode list offset
+    mov fs, [VBE_INFO + 16]         ; Mode list segment
+
+    xor bp, bp                      ; BP = best mode number found so far (0 = none)
+    xor edx, edx                    ; EDX = best pixel count (width * height) so far
+
+.find_mode_loop:
+    mov cx, [fs:si]                 ; Read next 16-bit mode number from list
+    add si, 2
+    cmp cx, 0xFFFF                  ; 0xFFFF marks the end of the mode list
+    je .done_searching
+
+    ; Query info for mode CX (AX = 0x4F01)
+    push cx
+    push si
+    push edx
     mov ax, 0x4F01
-    mov cx, 0x118
+    mov di, VBE_MODE_INFO
+    int 0x10
+    pop edx
+    pop si
+    pop cx
+    cmp ax, 0x004F
+    jne .find_mode_loop             ; Skip mode if query failed
+
+    ; Check ModeAttributes (offset 0): must have bit 0 (supported) + bit 7 (linear FB)
+    mov ax, [VBE_MODE_INFO + 0]
+    and ax, 0x0081
+    cmp ax, 0x0081
+    jne .find_mode_loop
+
+    ; Require 32 bits per pixel (offset 25)
+    cmp byte [VBE_MODE_INFO + 25], 32
+    jne .find_mode_loop
+
+    ; Check width (offset 18) <= MAX_WIDTH and height (offset 20) <= MAX_HEIGHT
+    movzx eax, word [VBE_MODE_INFO + 18]
+    cmp eax, MAX_WIDTH
+    ja .find_mode_loop
+
+    movzx ebx, word [VBE_MODE_INFO + 20]
+    cmp ebx, MAX_HEIGHT
+    ja .find_mode_loop
+
+    ; Calculate total pixels = width * height
+    push edx
+    mul ebx                         ; EAX = width * height (clobbers EDX)
+    pop edx
+
+    cmp eax, edx                    ; Is this mode larger than our best so far?
+    jbe .find_mode_loop
+
+    ; Save new best mode!
+    mov edx, eax                    ; Update best pixel count
+    mov bp, cx                      ; Update best mode number
+    jmp .find_mode_loop
+
+.done_searching:
+    test bp, bp                     ; Check if atleast one is
+    jz vbe_error
+
+    ; Re-query the winning mode (BP) so VBE_MODE_INFO holds its exact data
+    mov ax, 0x4F01
+    mov cx, bp
     mov di, VBE_MODE_INFO
     int 0x10
     cmp ax, 0x004F
     jne vbe_error
 
-    ; Extract framebuffer details from VBE ModeInfoBlock into BOOT_INFO (0x7000)
-    mov eax, [VBE_MODE_INFO + 40]   ; Physical base pointer (32-bit)
+    ; Copy winning mode's framebuffer details into BOOT_INFO (0x7000)
+    mov eax, [VBE_MODE_INFO + 40]
     mov [BOOT_INFO + 0], eax
-    mov dword [BOOT_INFO + 4], 0    ; Upper 32 bits of 64-bit pointer = 0
+    mov dword [BOOT_INFO + 4], 0
 
-    movzx eax, word [VBE_MODE_INFO + 18] ; XResolution (width)
+    movzx eax, word [VBE_MODE_INFO + 18]
     mov [BOOT_INFO + 8], eax
 
-    movzx eax, word [VBE_MODE_INFO + 20] ; YResolution (height)
+    movzx eax, word [VBE_MODE_INFO + 20]
     mov [BOOT_INFO + 12], eax
 
-    movzx eax, word [VBE_MODE_INFO + 16] ; BytesPerScanLine (pitch)
+    movzx eax, word [VBE_MODE_INFO + 16]
     mov [BOOT_INFO + 16], eax
 
-    movzx eax, byte [VBE_MODE_INFO + 25] ; BitsPerPixel (bpp)
+    movzx eax, byte [VBE_MODE_INFO + 25]
     mov [BOOT_INFO + 20], eax
 
-    ; Switch to VBE Mode 0x118 with Linear Framebuffer bit (0x4000) enabled
+    ; Switch to winning VBE mode with Linear Framebuffer bit (0x4000) enabled
     mov ax, 0x4F02
-    mov bx, 0x118 | 0x4000
+    mov bx, bp
+    or bx, 0x4000
     int 0x10
     cmp ax, 0x004F
     jne vbe_error
@@ -112,8 +191,8 @@ init_pm:
     and ebx, 0xFFE00000             ; Align framebuffer base to 2 MB boundary
     or ebx, 0x83                    ; Present + RW + 2MB Huge Page
 
-    ; Map 4 consecutive 2MB pages (8 MB total, plenty for 1024x768x32 = 3 MB)
-    mov ecx, 4
+    ; Map 8 consecutive 2MB pages (16 MB total, safe for 1920x1080x32 and higher)
+    mov ecx, 8
 .map_fb_loop:
     mov [0x4000 + eax * 8], ebx
     add ebx, 0x200000
