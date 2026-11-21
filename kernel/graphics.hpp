@@ -63,4 +63,18 @@ void put_pixel(int x, int y, Color color);
  * @param color Target color
  */
 void fill_rect(int x, int y, int w, int h, Color color);
+/**
+ * Draws a character on screen using basic ASCII glyphs.
+ * Default character size is <code>8x8</code> pixels, which can be scaled using the <code>scale</code> parameter.
+ *
+ * @param x Top-left X coordinate
+ * @param y Top-left Y coordinate
+ * @param c Character to draw
+ * @param color Target color
+ * @param scale How much to scale the base size by
+ * @see font.hpp
+ */
+void draw_char(int x, int y, char c, Color color, int scale = 1);
+void draw_text(int x, int y, const char* text, Color color, int scale = 1);
+void draw_hex(int x, int y, uint64_t value, Color color, int scale = 1);
 }

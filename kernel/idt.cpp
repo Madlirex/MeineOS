@@ -24,7 +24,7 @@ const char* EXCEPTION_NAMES[32] = {
 
 namespace IDT
 {
-void set_gate(const uint8_t vector, void* handler, const uint8_t flags)
+void set_gate(const uint8_t vector, void* handler, const uint8_t flags) noexcept
 {
     const auto addr = reinterpret_cast<uint64_t>(handler);
     idt[vector].offset_low = addr & 0xFFFF;
@@ -36,7 +36,7 @@ void set_gate(const uint8_t vector, void* handler, const uint8_t flags)
     idt[vector].zero = 0;
 }
 
-void init()
+void init() noexcept
 {
     auto* raw = reinterpret_cast<uint8_t*>(&idt);
     for (uint64_t i = 0; i < sizeof(idt); i++)
@@ -78,6 +78,7 @@ extern "C" void isr_exception_handler(IDT::InterruptFrame* frame)
     Graphics::fill_rect(0, 0, static_cast<int>(BOOT_INFO->width), static_cast<int>(BOOT_INFO->height),
                         Graphics::Color(0x0050CC));
     Graphics::fill_rect(100, 100, 120, 120, Graphics::Color(0xFFFFFF)); // Classic white square/sad face badge
+    Graphics::draw_text(250, 100, "Oops!", Graphics::Color(0xFFFFFFFF), 10);
 
     while (true)
     {

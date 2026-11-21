@@ -38,7 +38,7 @@ void kernel_main()
     Graphics::fill_rect(0, static_cast<int>(BOOT_INFO->height - 40), static_cast<int>(BOOT_INFO->width), 40,
                         static_cast<Color>(0x242933));
     Graphics::fill_rect(8, static_cast<int>(BOOT_INFO->height - 34), 80, 28, static_cast<Color>(0x5E81AC));
-
+    asm volatile("int $3");
     while (true)
     {
         asm volatile("hlt");
