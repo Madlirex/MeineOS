@@ -28,6 +28,11 @@ void put_pixel(const int x, const int y, const Color color) {
     pixel[0] = static_cast<uint8_t>((color.blue  * color.alpha + pixel[0] * inv_alpha) / 255);
     pixel[1] = static_cast<uint8_t>((color.green * color.alpha + pixel[1] * inv_alpha) / 255);
     pixel[2] = static_cast<uint8_t>((color.red * color.alpha + pixel[2] * inv_alpha) / 255);
+
+    if (bytes_per_pixel == 4)
+    {
+        pixel[3] = color.alpha;
+    }
 }
 
 void fill_rect(const int x, const int y, const int w, const int h, const Color color) {
