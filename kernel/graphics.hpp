@@ -10,7 +10,8 @@ namespace Graphics
 /**
  * An 8-bit RGBA color.
  */
-struct Color {
+struct Color
+{
     uint8_t red;
     uint8_t green;
     uint8_t blue;
@@ -18,7 +19,7 @@ struct Color {
     /**
      * See-throughness from 0 (transparent) to 255 (solid).
      */
-    uint8_t alpha { 0xFF };
+    uint8_t alpha {0xFF};
 
     constexpr Color(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a = 0xFF) noexcept
         : red(r), green(g), blue(b), alpha(a) {}
@@ -37,11 +38,12 @@ struct Color {
      * Packs the color into a 32-bit 0xAARRGGBB integer.
      * @return Packed color value
      */
-    explicit constexpr operator uint32_t() const noexcept {
+    explicit constexpr operator uint32_t() const noexcept
+    {
         return (static_cast<uint32_t>(alpha) << 24) |
-               (static_cast<uint32_t>(red)   << 16) |
-               (static_cast<uint32_t>(green) << 8)  |
-                static_cast<uint32_t>(blue);
+            (static_cast<uint32_t>(red) << 16) |
+            (static_cast<uint32_t>(green) << 8) |
+            static_cast<uint32_t>(blue);
     }
 };
 
