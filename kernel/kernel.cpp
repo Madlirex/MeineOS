@@ -1,11 +1,8 @@
 #include "boot_info.hpp"
-#include "graphics.hpp"
 #include "serial.hpp"
 #include "idt.hpp"
 #include "pmm.hpp"
 #include "vmm.hpp"
-
-using Color = Graphics::Color;
 
 extern "C" __attribute__ ((section
 (
@@ -25,5 +22,6 @@ void kernel_main()
     Serial::print_hex(BOOT_INFO->framebuffer);
     Serial::print("\n");
 
+    asm volatile("int $8");
     while (true) { asm volatile("hlt"); }
 }

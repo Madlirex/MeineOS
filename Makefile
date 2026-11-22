@@ -36,7 +36,7 @@ os.img: stage1.bin stage2.bin kernel.bin
 	fsutil file seteof os.img 1474560
 
 run: os.img
-	$(QEMU) -m 8G -drive format=raw,file=os.img -serial stdio
+	$(QEMU) -drive format=raw,file=os.img -serial stdio
 
 debug: os.img
 	$(QEMU) -drive format=raw,file=os.img -s -S -no-reboot -d int -serial stdio
