@@ -2,22 +2,26 @@ ENTRY(kernel_main)
 
 SECTIONS {
     . = 0x100000;
+    kernel_start = .;
 
-    .text : {
+    .text : ALIGN(4K) {
         *(.text.boot)
         *(.text*)
     }
 
-    .rodata : {
+    .rodata : ALIGN(4K) {
         *(.rodata*)
     }
 
-    .data : {
+    .data : ALIGN(4K) {
         *(.data*)
     }
 
-    .bss : {
+    .bss : ALIGN(4K) {
         *(.bss*)
         *(COMMON)
     }
+
+    . = ALIGN(4K);
+    kernel_end = .;
 }

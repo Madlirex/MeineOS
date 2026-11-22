@@ -2,6 +2,7 @@
 #include "graphics.hpp"
 #include "serial.hpp"
 #include "idt.hpp"
+#include "pmm.hpp"
 #include <stdint.h>
 
 using Color = Graphics::Color;
@@ -11,6 +12,7 @@ void kernel_main()
 {
     Serial::init();
     IDT::init();
+    PMM::init();
 
     Serial::print("[KERNEL] Booted into 64-bit Long Mode!\n");
     Serial::print("[KERNEL] Framebuffer address: ");

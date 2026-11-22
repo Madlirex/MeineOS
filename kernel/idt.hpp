@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 
+/**
+ * Interrupt Descriptor Table for handling interrupts.
+ */
 namespace IDT
 {
 /**

@@ -1,6 +1,9 @@
 #pragma once
 #include <stdint.h>
 
+/**
+ * Basic functions to communicate with an outer console in VM mode.
+ */
 namespace Serial
 {
 /**
