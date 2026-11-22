@@ -39,18 +39,12 @@ void set_gate(const uint8_t vector, void* handler, const uint8_t flags) noexcept
 void init() noexcept
 {
     auto* raw = reinterpret_cast<uint8_t*>(&idt);
-    for (uint64_t i = 0; i < sizeof(idt); i++)
-    {
-        raw[i] = 0;
-    }
+    for (uint64_t i = 0; i < sizeof(idt); i++) { raw[i] = 0; }
 
     idt_ptr.limit = sizeof(idt) - 1;
     idt_ptr.base = reinterpret_cast<uint64_t>(&idt);
 
-    for (uint8_t i = 0; i < 32; i++)
-    {
-        set_gate(i, isr_stub_table[i]);
-    }
+    for (uint8_t i = 0; i < 32; i++) { set_gate(i, isr_stub_table[i]); }
 
     asm volatile("lidt %0" : : "m"(idt_ptr));
     Serial::print("[IDT] 64-bit Interrupt Descriptor Table loaded.\n");
@@ -95,8 +89,5 @@ extern "C" void isr_exception_handler(IDT::InterruptFrame* frame)
     Graphics::draw_text(620, 516, "RSP:", white, 3);
     Graphics::draw_hex(916, 516, frame->rsp, white, 3);
 
-    while (true)
-    {
-        asm volatile("cli; hlt");
-    }
+    while (true) { asm volatile("cli; hlt"); }
 }

@@ -17,35 +17,20 @@ void init() noexcept
     outb(COM1 + 4, 0x0B); // IRQs enabled, RTS/DSR set
 }
 
-bool is_transmit_empty() noexcept
-{
-    return (inb(COM1 + 5) & 0x20) != 0;
-}
+bool is_transmit_empty() noexcept { return (inb(COM1 + 5) & 0x20) != 0; }
 
 void write_char(char c) noexcept
 {
-    while (!is_transmit_empty())
-    {
-        asm volatile("pause");
-    }
+    while (!is_transmit_empty()) { asm volatile("pause"); }
     outb(COM1, static_cast<uint8_t>(c));
 }
 
-void print(const char* str) noexcept
-{
-    for (int i = 0; str[i] != '\0'; i++)
-    {
-        write_char(str[i]);
-    }
-}
+void print(const char* str) noexcept { for (int i = 0; str[i] != '\0'; i++) { write_char(str[i]); } }
 
 void print_hex(const uint64_t value) noexcept
 {
     auto hex_chars = "0123456789ABCDEF";
     print("0x");
-    for (int i = 60; i >= 0; i -= 4)
-    {
-        write_char(hex_chars[(value >> i) & 0xF]);
-    }
+    for (int i = 60; i >= 0; i -= 4) { write_char(hex_chars[(value >> i) & 0xF]); }
 }
 }
