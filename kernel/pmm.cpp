@@ -17,14 +17,14 @@ uint64_t last_free_page = 0; /**< Cached index of last free memory page for fast
  * @param page Index of page to be marked
  * @see bitmap_clear, bitmap_test
  */
-inline void bitmap_set(const uint64_t page) { bitmap[page / 8] |= (1 << (page % 8)); }
+inline void bitmap_set(const uint64_t page) { bitmap[page / 8] |= (1ULL << (page % 8)); }
 
 /**
  * Marks a certain memory page as free.
  * @param page Index of page to be marked
  * @see bitmap_set, bitmap_test
  */
-inline void bitmap_clear(const uint64_t page) { bitmap[page / 8] &= ~(1 << (page % 8)); }
+inline void bitmap_clear(const uint64_t page) { bitmap[page / 8] &= ~(1ULL << (page % 8)); }
 
 /**
  * Tests a certain memory page to see whether it's free or used.
@@ -32,7 +32,7 @@ inline void bitmap_clear(const uint64_t page) { bitmap[page / 8] &= ~(1 << (page
  * @return <code>true</code> if page is used, <code>false</code> if free
  * @see bitmap_set, bitmap_clear
  */
-inline bool bitmap_test(const uint64_t page) { return (bitmap[page / 8] & (1 << (page % 8))) != 0; }
+inline bool bitmap_test(const uint64_t page) { return (bitmap[page / 8] & (1ULL << (page % 8))) != 0; }
 
 /**
  * Marks a memory region as free.
