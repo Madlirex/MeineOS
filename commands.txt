@@ -1,0 +1,4 @@
+$b = [System.IO.File]::ReadAllBytes("$PWD\os.img")
+$b[0xA4C] = 0x03
+[System.IO.File]::WriteAllBytes("$PWD\os.img", $b)
+Format-Hex os.img | Select-String "CD 03"
