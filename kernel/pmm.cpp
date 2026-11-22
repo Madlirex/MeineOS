@@ -136,7 +136,7 @@ void init()
     mark_region_used(reinterpret_cast<uint64_t>(bitmap), bitmap_size);
 
     Serial::print("[PMM] Initialized. Free RAM (bytes): ");
-    Serial::print_hex(get_used_memory());
+    Serial::print_hex(get_free_memory());
     Serial::print("\n");
 }
 
