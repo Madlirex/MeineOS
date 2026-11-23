@@ -3,6 +3,7 @@
 #include "idt.hpp"
 #include "pmm.hpp"
 #include "vmm.hpp"
+#include "heap.hpp"
 
 extern "C" __attribute__ ((section
 (
@@ -16,12 +17,12 @@ void kernel_main()
     IDT::init();
     PMM::init();
     VMM::init();
+    Heap::init();
 
     Serial::print("[KERNEL] Booted into 64-bit Long Mode!\n");
     Serial::print("[KERNEL] Framebuffer address: ");
     Serial::print_hex(BOOT_INFO->framebuffer);
     Serial::print("\n");
 
-    asm volatile("int $8");
     while (true) { asm volatile("hlt"); }
 }
